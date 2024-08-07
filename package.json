@@ -1,0 +1,19 @@
+{
+  "name": "kafka-simple-web-based-client",
+  "version": "1.0.0",
+  "description": "Simple user-friendly web application designed to interact with Apache Kafka.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "production": "pm2 start index.js --name \"localhost 3000\""
+  },
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2",
+    "kafka-node": "^5.0.0",
+    "pm2": "^5.4.2",
+    "socket.io": "^4.7.5",
+    "sqlite3": "^5.1.7"
+  }
+}
