@@ -55,7 +55,9 @@ app.get('/topics', (req, res) => {
                 return res.status(500).json({ message: error.message || 'Failed to load topics' });
             }
             const topics = results[1].metadata;
-            const filteredTopics = Object.keys(topics).filter(topic => !topic.startsWith('__'));
+            const filteredTopics = Object.keys(topics).filter(topic => !topic.startsWith('__'))
+                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+            ;
             res.json(filteredTopics);
         });
     });

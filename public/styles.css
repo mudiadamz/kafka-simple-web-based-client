@@ -8,8 +8,6 @@
 }
 
 body {
-    height: 100vh;
-    overflow: hidden;
     background-color: var(--light-color);
     font-family: 'Arial', sans-serif;
     font-size: 13px;
@@ -56,6 +54,11 @@ body {
     color: var(--primary-color);
 }
 
+.div-table{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
 .response-column {
     height: 1rem;
     overflow: hidden;
@@ -82,17 +85,18 @@ body {
 }
 
 .responses-container {
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    height: 85vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    /*background-color: #ffffff;*/
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*overflow-y: auto;*/
+    /*overflow-x: hidden;*/
+    flex-grow: 1;
 }
 
 .response-row {
     display: flex;
 }
+
 .response-column:nth-child(1) {
     flex: 1;
 }
@@ -104,7 +108,9 @@ body {
 .response-column:nth-child(3) {
     flex: 5;
 }
+.response-footer{
 
+}
 h2 {
     font-size: 1.2rem;
     font-weight: bold
@@ -120,15 +126,24 @@ h2 {
 .main {
     display: flex;
     flex-direction: row;
+    /* height: 100%; */
+    flex-grow: 1;
 }
 
 .side-panel {
     color: white;
+    height: 100vh;
+}
+
+.side-panel .btn.is-collapse {
+    background-color: black;
 }
 
 .main-panel {
     flex-grow: 1;
-    padding: 1rem;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
 }
 
 .filter-container {
@@ -143,19 +158,15 @@ h2 {
 .sidebar2 {
     transition: right .1s ease;
     width: 20rem;
-    height: 100vh;
     background-color: white;
-    position: absolute;
     z-index: 1050;
-    top: 49px;
-    left: 41px;
     box-shadow: 0 0 2px #777;
     padding: 1rem;
 }
 
 .sidebar2 .btn-close2 {
     position: absolute;
-    right: -5px;
+    left: 22rem;
     top: 50%;
     background: white;
     box-shadow: 0 0 1px #111;
@@ -190,4 +201,17 @@ h2 {
 
 #connectionList li:hover .button-wrapper {
     display: block;
+}
+
+.myTab {
+    border: none;
+}
+
+.myTab .nav-link {
+    color: white;
+    border-radius: 0;
+}
+
+.tab-content {
+    flex: auto;
 }

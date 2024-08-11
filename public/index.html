@@ -4,191 +4,192 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kafka Client</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
-</head>
-<body>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #connectionList {
+            overflow-x: hidden;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
 
-<div class="overlay"></div>
-<nav class="navbar navbar-expand-lg p-0">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Kafka Web Client</a>
-        <div class="navbar-nav ms-auto">
-            <div class="filter-container input-group input-group-sm mt-2">
-                <input type="text" id="regexFilter" class="form-control" placeholder="Enter regex to filter rows">
-                <button type="button" class="btn btn-primary" id="applyRegexFilter">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-            <button type="button" class="btn ms-2" title="Filter topics" id="filterTopic"
-                    data-bs-toggle="modal"
-                    data-bs-target="#filterTopicModal">
-                <i class="fas fa-filter text-white"></i>
+        .server-topics li button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .server-topics li:hover {
+            background-color: #cccccc;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col h-screen">
+
+<nav class="bg-blue-900 p-1">
+    <div class="container mx-auto flex justify-between items-center">
+        <a class="text-white text-xl font-bold" href="#">Kafka Web Client</a>
+        <div class="flex items-center space-x-2">
+            <input type="text" id="regexFilter" class="text-sm p-2 rounded-md" placeholder="Enter regex to filter rows">
+            <button type="button" class="bg-blue-500 text-white p-2 rounded-md" id="applyRegexFilter">
+                <i class="fas fa-search"></i>
             </button>
-            <button type="button" class="btn ms-2" title="Pause connection" id="pauseWebsocket">
-                <i
-                        class="fas fa-pause-circle text-white"></i>
+            <button type="button" class="text-white" title="Pause connection" id="pauseWebsocket" disabled>
+                <i class="fas fa-pause-circle"></i>
             </button>
-            <button class="btn clear-item ms-2" title="Clear messages">
-                <i class="fas fa-trash text-white"></i>
+            <button class="text-white" title="Clear messages" disabled>
+                <i class="fas fa-trash"></i>
             </button>
         </div>
     </div>
 </nav>
 
-<div class="sidebar2" style="display:none">
-    <button class="btn btn-close2">
-        <i class="fas fa-angle-left"></i>
-    </button>
-    <div class="header mb-3">
-        <strong>Connection</strong>
-        <button class="btn btn-sm btn-primary float-end"
-                data-bs-toggle="modal"
-                data-bs-target="#connectionSettingModal"
-        ><i class="fa fa-plus-circle"></i></button>
-    </div>
-    <ul id="connectionList" class="list-group">
-
-    </ul>
-</div>
-
-<main class="main">
-    <div class="side-panel bg-dark">
-        <ul>
+<main class="flex flex-grow overflow-hidden">
+    <div class="side-panel bg-gray-900 w-16 h-full flex flex-col items-center py-4">
+        <ul class="space-y-4">
             <li>
-                <button class="btn btn-connection" title="Connection"><i class="fas fa-cog text-white"></i></button>
+                <button class="text-white" title="Connection" data-toggle="#sidebar2">
+                    <i class="fas fa-cog"></i>
+                </button>
             </li>
             <li>
-                <button
-                        title="Send message"
-                        type="button"
-                        class="btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#messageModal">
-                    <i class="fas fa-paper-plane text-white"></i>
+                <button class="text-white" title="Send message" data-bs-toggle="modal" data-bs-target="#messageModal">
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </li>
         </ul>
     </div>
-    <div class="main-panel">
-        <div class="div-table">
-            <div class="response-header">
-                <div class="response-column">Topic</div>
-                <div class="response-column">Timestamp</div>
-                <div class="response-column">Value</div>
-            </div>
-            <div id="messages" class="responses-container"><span class="init">Initiating...</span></div>
+
+    <div id="sidebar2" class="bg-gray-800 w-64 h-full p-4">
+        <button class="text-white mb-4" data-toggle="#sidebar2">
+            <i class="fas fa-angle-left"></i>
+        </button>
+        <div class="header mb-3 flex justify-between items-center">
+            <strong class="text-white">Connection</strong>
+            <button class="bg-blue-500 text-white text-sm px-2 py-1 rounded"
+                    data-bs-toggle="modal" data-bs-target="#connectionSettingModal">
+                <i class="fa fa-plus-circle"></i>
+            </button>
+        </div>
+        <div id="connectionList">
+            <!-- Connection items here -->
+        </div>
+    </div>
+
+    <div id="mainBar" class="flex-1 flex flex-col h-full">
+        <div class="border-b border-gray-200 bg-gray-900 text-white" id="mainTabNav">
+            <!--            <button class="tab-link p-2" data-tab="tab1">Home</button>-->
+            <!--            <button class="tab-link p-2" data-tab="tab2">Settings</button>-->
+        </div>
+        <div id="mainTab" class="flex-1 flex flex-col h-full min-h-[1px]">
         </div>
     </div>
 </main>
 
-<!-- Modal -->
-<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="messageModalLabel">Send Kafka Message</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="kafka-form">
-                    <div class="form-group">
-                        <label for="topic">Topic:</label>
-                        <select id="topic" name="topic" class="form-control" required>
-                            <option value="" disabled selected>Select topic</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message:</label>
-                        <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send</button>
-                </form>
-            </div>
+<div id="messageModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg">
+        <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+            <h2 class="text-lg">Send Kafka Message</h2>
+            <button class="text-white" onclick="closeModal('messageModal')">&times;</button>
+        </div>
+        <div class="p-6">
+            <form id="kafka-form">
+                <div class="mb-4">
+                    <label for="topic" class="block text-sm font-medium text-gray-700">Topic:</label>
+                    <select id="topic" name="topic" class="mt-1 block w-full rounded-md" required>
+                        <option value="" disabled selected>Select topic</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="message" class="block text-sm font-medium text-gray-700">Message:</label>
+                    <textarea id="message" name="message" class="mt-1 block w-full rounded-md" rows="5"
+                              required></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Send</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="filterTopicModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="filterTopicModalLabel">Filter Topics</h2>
-                <input type="text" class=" ms-auto me-auto" placeholder="Search" style="padding: 6px; width: 15rem;"
-                       id="filterListTopic">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="filterTopicModal-form">
-                    <div class="form-group topic-list"></div>
-                    <div class="form-group buttons">
-                        <button type="button" class="btn btn-primary" id="applyFilter">Apply</button>
-                    </div>
-                </form>
-            </div>
+<div id="connectionSettingModal"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg">
+        <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+            <h2 class="text-lg">Send Kafka Message</h2>
+            <button class="text-white" onclick="closeModal('connectionSettingModal')">&times;</button>
         </div>
-    </div>
-</div>
+        <div class="p-6">
+            <form id="connectionSettingModal-form">
+                <div class="mb-4">
+                    <label for="bsServer" class="block text-sm font-medium text-gray-700">Bootstrap Server
+                        <small class="text-red-600">*</small>
+                    </label>
+                    <input id="bsServer" name="bsServer" class="p-1 mt-1 block w-full rounded-md border border-gray-500"
+                           required/>
+                </div>
 
-<!-- Modal -->
-<div class="modal fade" id="connectionSettingModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="connectionSettingModalLabel">Connection setting</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="connectionSettingModal-form">
-                    <div class="form-group mb-3">
-                        <label for="bsServer">Bootstrap servers <span class="text-danger">*</span></label>
-                        <input name="server" id="bsServer" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="bsLabel">Label/Name</label>
-                        <input name="label" id="bsLabel" class="form-control">
-                    </div>
-                    <div class="form-group buttons">
-                        <div class="float-end">
-                            <!--                            <button type="button" class="btn btn-secondary">Test connection</button>-->
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                <div class="mb-4">
+                    <label for="bsLabel" class="block text-sm font-medium text-gray-700">Connection name</label>
+                    <input id="bsLabel" name="bsLabel" class="p-1 mt-1 block w-full rounded-md border border-gray-500"/>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Send</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.socket.io/3.0.3/socket.io.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+<script src="script.js"></script>
+<script src="div-table.js"></script>
 
-<script type="text/javascript">toastr.options = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": true,
-    "positionClass": "toast-bottom-right",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "2000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-}</script>
-<script type="text/javascript" src="script.js"></script>
+<script>
+    // Tab functionality
+    $(document).on('click', '.tab-link', function () {
+        const tab = $(this).data('tab');
+
+        $(document).find('.tab-pane').addClass('hidden');
+        $(document).find('#' + tab).removeClass('hidden');
+
+        $(document).find('.tab-link').removeClass('border-blue-500 text-blue-500')
+            .addClass('border-transparent text-white');
+
+        $(this).removeClass('border-transparent text-white')
+            .addClass('border-blue-500 text-blue-500');
+    });
+
+    // Simulate Bootstrap modal functionality using Tailwind
+    $(document).on('click', '[data-bs-toggle="modal"]', function () {
+        $(document).find($(this).data('bs-target')).removeClass('hidden');
+    });
+
+    function closeModal(modalId) {
+        $('#' + modalId).addClass('hidden');
+    }
+
+
+    // divTable('#mainTable', ["Topic", "Timestamp", "Value"]);
+
+    // for (let i = 0; i < 100; i++) {
+    //     let row = `<div class="div-table-row">
+    //         <div class="div-table-col">123</div>
+    //         <div class="div-table-col">456</div>
+    //         <div class="div-table-col">789</div>
+    //     </div>`;
+    //     document.querySelector('.div-table-body').insertAdjacentHTML('beforeend', row);
+    // }
+
+</script>
 </body>
 </html>
