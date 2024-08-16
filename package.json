@@ -1,5 +1,6 @@
 {
   "name": "kafka-simple-web-based-client",
+  "author": "techgalery.com",
   "version": "1.0.0",
   "description": "Simple user-friendly web application designed to interact with Apache Kafka.",
   "main": "index.js",
