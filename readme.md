@@ -1,5 +1,8 @@
 # Kafka Web Client
 
+![Kafka Explorer Web Client](./public/kafka-web-client.png)
+
+
 This project is a web-based client for interacting with Kafka clusters. It provides a user-friendly interface to connect to Kafka brokers, send messages, and listen to topics. The client is built with Express, Kafka-Node, Socket.io, and SQLite on the backend, and uses Tailwind CSS, jQuery, and FontAwesome on the frontend.
 
 ## Features

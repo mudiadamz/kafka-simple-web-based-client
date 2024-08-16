@@ -23,6 +23,11 @@
         .server-topics li:hover {
             background-color: #cccccc;
         }
+
+        .sidebar-ul li button {
+            width: 100%;
+            padding: 5px;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex flex-col h-screen">
@@ -41,15 +46,15 @@
 
 
 <main class="flex flex-grow overflow-hidden">
-    <aside class="bg-gray-900 w-16 h-full flex flex-col items-center py-4">
-        <ul class="space-y-4">
+    <aside class="bg-gray-900 w-16 h-full flex flex-col items-center">
+        <ul class="sidebar-ul w-full">
             <li>
                 <button class="text-white" title="Connection" data-toggle="#sidebar2">
                     <i class="fas fa-cog"></i>
                 </button>
             </li>
             <li>
-                <button class="text-white" title="Topics" data-bs-toggle="modal" data-bs-target="#topicModal">
+                <button class="text-white" title="Create Topics" data-bs-toggle="modal" data-bs-target="#topicModal">
                     <i class="fas fa-th-large"></i>
                 </button>
             </li>
@@ -89,25 +94,43 @@
 
 <div id="topicModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg max-h-full sm:max-h-[90%]">
-        <header class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
-            <h2 class="text-lg">Kafka Topics</h2>
-            <button class="text-white" onclick="closeModal('topicModal')">&times;</button>
+        <header class="bg-gray-800 text-white px-4 py-3 flex justify-between items-center">
+            <h2 class="text-lg font-semibold">Create Kafka Topics</h2>
+            <button class="text-white text-xl" onclick="closeModal('topicModal')">&times;</button>
         </header>
-        <div class="overflow-y-auto max-h-[calc(100vh-100px)]">
-            <table class="min-w-full bg-white border border-gray-200" id="topicListTable">
-                <thead>
-                    <tr class="bg-gray-100 border-b">
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+        <div class="overflow-y-auto p-6 max-h-[calc(100vh-100px)]">
+            <div id="result" class="mb-4 text-sm text-red-600"></div>
+
+            <form id="createTopicForm" class="space-y-4">
+                <div>
+                    <label for="topicName" class="block text-sm font-medium text-gray-700">Topic Name</label>
+                    <input type="text" id="topicName" name="topic" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+
+                <div>
+                    <label for="partitions" class="block text-sm font-medium text-gray-700">Partitions</label>
+                    <input type="number" id="partitions" name="partitions" value="1" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+
+                <div>
+                    <label for="replicationFactor" class="block text-sm font-medium text-gray-700">Replication
+                        Factor</label>
+                    <input type="number" id="replicationFactor" name="replicationFactor" value="1" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="inline-flex justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Create Topic
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
 
 <div id="messageModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg">
@@ -119,13 +142,15 @@
             <form id="kafka-form">
                 <div class="mb-4">
                     <label for="topic" class="block text-sm font-medium text-gray-700">Topic:</label>
-                    <select id="topic" name="topic" class="mt-1 block w-full rounded-md border border-gray-500 p-1" required>
+                    <select id="topic" name="topic" class="mt-1 block w-full rounded-md border border-gray-500 p-1"
+                            required>
                         <option value="" disabled selected>Select topic</option>
                     </select>
                 </div>
                 <div class="mb-4">
                     <label for="message" class="block text-sm font-medium text-gray-700">Message:</label>
-                    <textarea id="message" name="message" class="mt-1 block w-full rounded-md border border-gray-500 p-1" rows="5"
+                    <textarea id="message" name="message"
+                              class="mt-1 block w-full rounded-md border border-gray-500 p-1" rows="5"
                               required></textarea>
                 </div>
                 <div class="flex justify-end">
@@ -173,6 +198,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 <script src="script.js"></script>
 <script src="div-table.js"></script>
+<script src="create-topic.js"></script>
 
 <script>
     // Tab functionality
@@ -186,22 +212,47 @@
             .addClass('border-blue-500 text-blue-500');
     });
 
+    function handleTopicModal() {
+        if (!connIndex) {
+            connectServer($(document).find('.connect-server').first());
+        }
+    }
+
+    function handleNewMessageModal() {
+        if (!connIndex) {
+            connectServer($(document).find('.connect-server').first());
+            return;
+        }
+
+        fetchTopics(function (topics) {
+            $('#topic').empty();
+            topics.forEach(topic => {
+                $('#topic').append(`<option value="${topic}">${topic}</option>`);
+            });
+        });
+    }
+
     // Simulate Bootstrap modal functionality using Tailwind
     $(document).on('click', '[data-bs-toggle="modal"]', function () {
         const target = $(this).data('bs-target');
         $(target).removeClass('hidden');
+
+        switch (target) {
+            case '#topicModal':
+                handleTopicModal();
+                break;
+            case '#messageModal':
+                handleNewMessageModal();
+                break;
+            default:
+                break;
+        }
     });
 
     function closeModal(modalId) {
         $(document).find('#' + modalId).addClass('hidden');
     }
-    for(let i= 0; i<100; i++){
-        $(document).find('#topicListTable tbody').append(`
-                    <tr class="border-b">
-                        <td class="px-6 py-4 text-sm text-gray-700">HTML Basics</td>
-                        <td class="px-6 py-4 text-sm text-blue-500"><a href="#">View</a></td>
-                    </tr>`);
-    }
+
 </script>
 </body>
 </html>

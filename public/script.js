@@ -45,16 +45,20 @@ kafkaForm.addEventListener('submit', (event) => {
 
     const topic = $('#topic').val();
     const message = document.getElementById('message').value;
-    const groupId = document.body.getAttribute('data-client');
+    // const groupId = document.body.getAttribute('data-client');
 
     fetch('/send', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({topic, message, groupId})
+        body: JSON.stringify({connectionIndex: connIndex, topic, message})
     })
         .then(response => response.json())
-        .then(data => console.log('Message sent:', data))
-        .catch(error => console.error('Error:', error));
+        .then(data => {
+            toastr.success('Sucess')
+        })
+        .catch(error => {
+            toastr.error(error)
+        });
 });
 
 // Handle topic selection and start listening
@@ -193,27 +197,43 @@ $(document).on('click', '#connectionList .btn-edit', function () {
     loadConnectionData(id);
 });
 
-// Toggle visibility of topics under a connection
-$(document).on('click', '.connect-server', function () {
-    connIndex = $(this).closest('[data-index]').data('index');
-    const $serverTopics = $(this).closest('.list-group-item').find('.server-topics').toggleClass("hidden").empty();
-
+function fetchTopics(callback) {
     fetch(`/topics?connectionIndex=${connIndex}`)
         .then(response => response.json())
         .then(topics => {
-            topics.forEach(topic => {
-                $serverTopics.append(`
+            callback(topics);
+        })
+        .catch(error => toastr.error(error.message || 'Failed to fetch topics'));
+}
+
+function connectServer($connItem) {
+    connIndex = $connItem.closest('[data-index]').data('index');
+    if (!connIndex) {
+        toastr.error('Connection not found!');
+        return;
+    }
+    const $serverTopics = $connItem.closest('.list-group-item').find('.server-topics');
+    $serverTopics.toggleClass("hidden").empty();
+
+    fetchTopics(function (topics) {
+        topics.forEach(topic => {
+            $serverTopics.append(`
                     <li>
                         <button data-topic="${topic}">
                             <i class="far fa-fw fa-circle text-sm cursor-default"></i> ${topic}
                         </button>
                     </li>
                 `);
-            });
-            toastr.success("Connected but no topics!")
-        })
-        .catch(error => toastr.error(error.message || 'Failed to fetch topics'));
+        });
+        toastr.success("Connected but no topics!");
+    });
+}
+
+// Toggle visibility of topics under a connection
+$(document).on('click', '.connect-server', function () {
+    connectServer($(this));
 });
+
 
 $(document).on('click', '[data-toggle]', function (e) {
     e.preventDefault();
@@ -226,3 +246,4 @@ $(document).on('click', '[data-toggle]', function (e) {
 $(function () {
     loadConnectionList();
 });
+

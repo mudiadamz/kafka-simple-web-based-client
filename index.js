@@ -1,5 +1,5 @@
 const express = require('express');
-const { KafkaClient, Producer, ConsumerGroup } = require('kafka-node');
+const { KafkaClient, Producer, ConsumerGroup, Admin } = require('kafka-node');
 const http = require('http');
 const socketIo = require('socket.io');
 const sqlite3 = require('sqlite3').verbose();
@@ -176,6 +176,41 @@ app.delete('/connections/:id', (req, res) => {
         res.sendStatus(200);
     });
 });
+
+app.post('/create-topic', (req, res) => {
+    const { connectionIndex, topic, partitions = 1, replicationFactor = 1 } = req.body;
+
+    getConnectionById(connectionIndex, (err, row) => {
+        if (err || !row) {
+            return res.status(400).json({ message: 'Invalid connection index' });
+        }
+
+        const kafkaClient = getKafkaClient(row.server);
+        const admin = new Admin(kafkaClient);
+
+        const topicConfig = [
+            {
+                topic,
+                partitions,
+                replicationFactor,
+            },
+        ];
+
+        admin.createTopics(topicConfig, (error, result) => {
+            if (error) {
+                return res.status(500).json({ message: error.message || 'Failed to create topic' });
+            }
+
+            res.json({ message: 'Topic created successfully', result });
+        });
+
+        admin.on('error', (error) => {
+            console.error('Admin error:', error);
+            res.status(500).json({ message: error.message || 'Admin error' });
+        });
+    });
+});
+
 
 const PORT = 3000;
 server.listen(PORT, () => {
