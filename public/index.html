@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         #connectionList {
-            overflow-x: hidden;
             overflow-y: auto;
             max-height: 70vh;
         }
@@ -29,29 +28,29 @@
 <body class="bg-gray-100 flex flex-col h-screen">
 
 <nav class="bg-blue-900 p-1">
-    <div class="container mx-auto flex justify-between items-center">
+    <div class="flex justify-between items-center w-full px-4">
         <a class="text-white text-xl font-bold" href="#">Kafka Web Client</a>
-        <div class="flex items-center space-x-2">
+        <div class="navbar-tools flex ml-auto space-x-2">
             <input type="text" id="regexFilter" class="text-sm p-2 rounded-md" placeholder="Enter regex to filter rows">
             <button type="button" class="bg-blue-500 text-white p-2 rounded-md" id="applyRegexFilter">
                 <i class="fas fa-search"></i>
-            </button>
-            <button type="button" class="text-white" title="Pause connection" id="pauseWebsocket" disabled>
-                <i class="fas fa-pause-circle"></i>
-            </button>
-            <button class="text-white" title="Clear messages" disabled>
-                <i class="fas fa-trash"></i>
             </button>
         </div>
     </div>
 </nav>
 
+
 <main class="flex flex-grow overflow-hidden">
-    <div class="side-panel bg-gray-900 w-16 h-full flex flex-col items-center py-4">
+    <aside class="bg-gray-900 w-16 h-full flex flex-col items-center py-4">
         <ul class="space-y-4">
             <li>
                 <button class="text-white" title="Connection" data-toggle="#sidebar2">
                     <i class="fas fa-cog"></i>
+                </button>
+            </li>
+            <li>
+                <button class="text-white" title="Topics" data-bs-toggle="modal" data-bs-target="#topicModal">
+                    <i class="fas fa-th-large"></i>
                 </button>
             </li>
             <li>
@@ -60,51 +59,73 @@
                 </button>
             </li>
         </ul>
-    </div>
+    </aside>
 
-    <div id="sidebar2" class="bg-gray-800 w-64 h-full p-4">
+    <section id="sidebar2" class="bg-gray-800 w-64 h-full p-4 hidden">
         <button class="text-white mb-4" data-toggle="#sidebar2">
             <i class="fas fa-angle-left"></i>
         </button>
-        <div class="header mb-3 flex justify-between items-center">
+        <header class="mb-3 flex justify-between items-center">
             <strong class="text-white">Connection</strong>
-            <button class="bg-blue-500 text-white text-sm px-2 py-1 rounded"
-                    data-bs-toggle="modal" data-bs-target="#connectionSettingModal">
+            <button class="bg-blue-500 text-white text-sm px-2 py-1 rounded" data-bs-toggle="modal"
+                    data-bs-target="#connectionSettingModal">
                 <i class="fa fa-plus-circle"></i>
             </button>
-        </div>
+        </header>
         <div id="connectionList">
             <!-- Connection items here -->
         </div>
-    </div>
+    </section>
 
-    <div id="mainBar" class="flex-1 flex flex-col h-full">
-        <div class="border-b border-gray-200 bg-gray-900 text-white" id="mainTabNav">
-            <!--            <button class="tab-link p-2" data-tab="tab1">Home</button>-->
-            <!--            <button class="tab-link p-2" data-tab="tab2">Settings</button>-->
-        </div>
+    <section id="mainBar" class="flex-1 flex flex-col h-full">
+        <nav class="border-b border-gray-200 bg-gray-900 text-white" id="mainTabNav">
+            <!-- Tabs will go here -->
+        </nav>
         <div id="mainTab" class="flex-1 flex flex-col h-full min-h-[1px]">
+            <!-- Tab content goes here -->
+        </div>
+    </section>
+</main>
+
+<div id="topicModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg max-h-full sm:max-h-[90%]">
+        <header class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+            <h2 class="text-lg">Kafka Topics</h2>
+            <button class="text-white" onclick="closeModal('topicModal')">&times;</button>
+        </header>
+        <div class="overflow-y-auto max-h-[calc(100vh-100px)]">
+            <table class="min-w-full bg-white border border-gray-200" id="topicListTable">
+                <thead>
+                    <tr class="bg-gray-100 border-b">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
         </div>
     </div>
-</main>
+</div>
+
 
 <div id="messageModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg">
-        <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+        <header class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
             <h2 class="text-lg">Send Kafka Message</h2>
             <button class="text-white" onclick="closeModal('messageModal')">&times;</button>
-        </div>
+        </header>
         <div class="p-6">
             <form id="kafka-form">
                 <div class="mb-4">
                     <label for="topic" class="block text-sm font-medium text-gray-700">Topic:</label>
-                    <select id="topic" name="topic" class="mt-1 block w-full rounded-md" required>
+                    <select id="topic" name="topic" class="mt-1 block w-full rounded-md border border-gray-500 p-1" required>
                         <option value="" disabled selected>Select topic</option>
                     </select>
                 </div>
                 <div class="mb-4">
                     <label for="message" class="block text-sm font-medium text-gray-700">Message:</label>
-                    <textarea id="message" name="message" class="mt-1 block w-full rounded-md" rows="5"
+                    <textarea id="message" name="message" class="mt-1 block w-full rounded-md border border-gray-500 p-1" rows="5"
                               required></textarea>
                 </div>
                 <div class="flex justify-end">
@@ -118,27 +139,26 @@
 <div id="connectionSettingModal"
      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg">
-        <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
-            <h2 class="text-lg">Send Kafka Message</h2>
+        <header class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+            <h2 class="text-lg">Connection Settings</h2>
             <button class="text-white" onclick="closeModal('connectionSettingModal')">&times;</button>
-        </div>
+        </header>
         <div class="p-6">
             <form id="connectionSettingModal-form">
                 <div class="mb-4">
-                    <label for="bsServer" class="block text-sm font-medium text-gray-700">Bootstrap Server
-                        <small class="text-red-600">*</small>
-                    </label>
+                    <label for="bsServer" class="block text-sm font-medium text-gray-700">Bootstrap Server <small
+                            class="text-red-600">*</small></label>
                     <input id="bsServer" name="bsServer" class="p-1 mt-1 block w-full rounded-md border border-gray-500"
                            required/>
                 </div>
 
                 <div class="mb-4">
-                    <label for="bsLabel" class="block text-sm font-medium text-gray-700">Connection name</label>
+                    <label for="bsLabel" class="block text-sm font-medium text-gray-700">Connection Name</label>
                     <input id="bsLabel" name="bsLabel" class="p-1 mt-1 block w-full rounded-md border border-gray-500"/>
                 </div>
 
                 <div class="flex justify-end">
-                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Send</button>
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Save</button>
                 </div>
             </form>
         </div>
@@ -158,38 +178,30 @@
     // Tab functionality
     $(document).on('click', '.tab-link', function () {
         const tab = $(this).data('tab');
-
         $(document).find('.tab-pane').addClass('hidden');
         $(document).find('#' + tab).removeClass('hidden');
-
         $(document).find('.tab-link').removeClass('border-blue-500 text-blue-500')
             .addClass('border-transparent text-white');
-
         $(this).removeClass('border-transparent text-white')
             .addClass('border-blue-500 text-blue-500');
     });
 
     // Simulate Bootstrap modal functionality using Tailwind
     $(document).on('click', '[data-bs-toggle="modal"]', function () {
-        $(document).find($(this).data('bs-target')).removeClass('hidden');
+        const target = $(this).data('bs-target');
+        $(target).removeClass('hidden');
     });
 
     function closeModal(modalId) {
-        $('#' + modalId).addClass('hidden');
+        $(document).find('#' + modalId).addClass('hidden');
     }
-
-
-    // divTable('#mainTable', ["Topic", "Timestamp", "Value"]);
-
-    // for (let i = 0; i < 100; i++) {
-    //     let row = `<div class="div-table-row">
-    //         <div class="div-table-col">123</div>
-    //         <div class="div-table-col">456</div>
-    //         <div class="div-table-col">789</div>
-    //     </div>`;
-    //     document.querySelector('.div-table-body').insertAdjacentHTML('beforeend', row);
-    // }
-
+    for(let i= 0; i<100; i++){
+        $(document).find('#topicListTable tbody').append(`
+                    <tr class="border-b">
+                        <td class="px-6 py-4 text-sm text-gray-700">HTML Basics</td>
+                        <td class="px-6 py-4 text-sm text-blue-500"><a href="#">View</a></td>
+                    </tr>`);
+    }
 </script>
 </body>
 </html>
